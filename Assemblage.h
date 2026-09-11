@@ -29,10 +29,11 @@ public:
 	//=======================================================================
 
 	// default constructor
-	Assemblage( unsigned int fs, unsigned int n_pieces = 4 )
+	Assemblage( unsigned int fs, unsigned int n_pieces = 4, unsigned int n_channels = 1 )
 	{
 		// default number of pieces
 		num_pieces = n_pieces;
+		channels = n_channels;
 		// initialize
 		collage = new SoundMatter*[num_pieces];
 		// default to 4 grains per sound object, can do more
@@ -81,16 +82,16 @@ public:
 		return out;
 	}
 
-	// this assumes we are outputting however many pieces we have in the assemblage, be careful! 
+	// only use this is channels > 1
 	void tick( SAMPLE* in, SAMPLE* out, unsigned int frames )
 	{
 		memset( out, 0, sizeof(SAMPLE) * num_pieces * frames); // clear
 
 		for( int f = 0; f < frames; f++ )
 		{
-			for( int c = 0; c < num_pieces; c++ )
+			for( int c = 0; c < channels; c++ )
 			{
-				out[f * num_pieces + c] = collage[c]->tick();
+				out[f * channels + c] = collage[c]->tick();
 			}
 		}
 	}
@@ -500,6 +501,7 @@ private:
 	stk::StkFrames* buffer = nullptr; // everyone reads from here
 	SoundMatter** collage = nullptr; // our pieces of sound
 	unsigned int num_pieces = 0; // how many pieces of sound?
+	unsigned int channels = 0;
 	float scalar = 0.f; // turn down the volume
 };
 
