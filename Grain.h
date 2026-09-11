@@ -17,8 +17,8 @@
 #include "Phasor.h"
 #include "GrainEvent.h"
 #include "Smoother.h"
-#include "../include/stk/include/Noise.h"
-#include "../include/stk/include/Stk.h"
+#include "stk/include/Noise.h"
+#include "stk/include/Stk.h"
 
 #define GRAIN_IN_PROGRESS false
 #define GRAIN_ENDED true
