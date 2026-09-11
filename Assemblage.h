@@ -32,7 +32,7 @@ public:
 	Assemblage( unsigned int fs, unsigned int n_pieces = 4, unsigned int n_channels = 1 )
 	{
 		// default number of pieces
-		num_pieces = n_pieces;
+		num_pieces = n_pieces * n_channels;
 		channels = n_channels;
 		// initialize
 		collage = new SoundMatter*[num_pieces];
@@ -85,13 +85,14 @@ public:
 	// only use this is channels > 1
 	void tick( SAMPLE* in, SAMPLE* out, unsigned int frames )
 	{
-		memset( out, 0, sizeof(SAMPLE) * num_pieces * frames); // clear
+		memset( out, 0, sizeof(SAMPLE) * channels * frames); // clear
 
 		for( int f = 0; f < frames; f++ )
 		{
-			for( int c = 0; c < channels; c++ )
+			for( int c = 0; c < num_pieces; c++ )
 			{
-				out[f * channels + c] = collage[c]->tick();
+				unsigned int chan = c % channels;
+				out[f * channels + chan] = collage[c]->tick();
 			}
 		}
 	}
@@ -175,6 +176,77 @@ public:
 		for( int i = 0; i < num_pieces; i++ ) collage[i]->setPitch( pitch, ms_to );
 		// how do we save this? maybe we just retrieve the targets of the sound matter(s) and fit them into a chuck array?
 	}
+	
+	// set all sizes to a single value
+	void setSize( float size )
+	{
+		// assign
+		for( int i = 0; i < num_pieces; i++ ) collage[i]->setSize( size );
+		// how do we save this?
+	}
+	
+	// set all positions to a single value
+	void setPosition( float position )
+	{
+		// assign
+		for( int i = 0; i < num_pieces; i++ ) collage[i]->setPosition( position );
+		// how do we save this?
+	}
+	
+	// set all positions to a single value
+	void setPosition( float position, float ms_to )
+	{
+		// assign
+		for( int i = 0; i < num_pieces; i++ ) collage[i]->setPosition( position, ms_to );
+		// how do we save this?
+	}
+	
+	void setGap( unsigned int gap_samp )
+	{
+		// assign
+		for( int i = 0; i < num_pieces; i++ ) collage[i]->setGap( gap_samp );
+	}
+	
+	
+	//=======================================================================
+	//
+	//	names: get* 
+	//	desc: get pitch, size and position
+	//	args: provide chuck array to be filled
+	// 
+	//=======================================================================
+	
+	// get all sizes and place them in the provided chuck array
+	void getSize( Chuck_ArrayFloat* sizes, const CK_DL_API& API )
+	{
+		// put data in chuck array
+		for( int i = 0; i < num_pieces; i++ ) 
+		{
+			API->object->array_float_push_back( sizes, collage[i]->getSize() );
+		}
+	}
+
+	// get all pitches and place them in the provided chuck array
+	void getPitch( Chuck_ArrayFloat* pitches, const CK_DL_API& API )
+	{
+		unsigned int size = API->object->array_float_size( pitches );
+		// put data in chuck array
+		for( int i = 0; i < size; i++ ) API->object->array_float_set_idx( pitches, i, collage[i]->getPitch() );
+	}
+
+	// get all positions and place them in the provided chuck array
+	void getPosition( Chuck_ArrayFloat* positions, const CK_DL_API& API )
+	{
+		unsigned int size = API->object->array_float_size( positions );
+		// put data in chuck array
+		for( int i = 0; i < size; i++ ) API->object->array_float_set_idx( positions, i, collage[i]->getPosition() );
+	}
+
+	// return the size of the first collage (helpful when not using arrays)
+	float getBaseSize()
+	{
+		return collage[0]->getSize();
+	}
 
 	// return the pitch of the first collage (helpful when not using arrays)
 	float getBasePitch()
@@ -187,59 +259,24 @@ public:
 	{
 		return collage[0]->getTargetPitch();
 	}
-
-	// set all sizes to a single value
-	void setSize( float size )
-	{
-		// assign
-		for( int i = 0; i < num_pieces; i++ ) collage[i]->setSize( size );
-		// how do we save this?
-	}
-
-	// return the size of the first collage (helpful when not using arrays)
-	float getBaseSize()
-	{
-		return collage[0]->getSize();
-	}
-
-	// set all positions to a single value
-	void setPosition( float position )
-	{
-		// assign
-		for( int i = 0; i < num_pieces; i++ ) collage[i]->setPosition( position );
-		// how do we save this?
-	}
-
-	// set all positions to a single value
-	void setPosition( float position, float ms_to )
-	{
-		// assign
-		for( int i = 0; i < num_pieces; i++ ) collage[i]->setPosition( position, ms_to );
-		// how do we save this?
-	}
-
+	
 	// return the position of the first collage (helpful when not using arrays)
 	float getBasePosition()
 	{
 		return collage[0]->getPosition();
 	}
+	
 	// return the position of the first collage (helpful when not using arrays)
 	float getTargetPosition()
 	{
 		return collage[0]->getTargetPosition();
 	}
-
-	void setGap( unsigned int gap_samp )
-	{
-		// assign
-		for( int i = 0; i < num_pieces; i++ ) collage[i]->setGap( gap_samp );
-	}
-
+	
 	unsigned int getGap()
 	{
 		return collage[0]->getGap();
 	}
-
+	
 	//=======================================================================
 	//
 	//	names: setRandom* 
