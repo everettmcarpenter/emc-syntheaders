@@ -442,6 +442,59 @@ public:
 		for( unsigned int i = 0; i < num_pieces; i++ ) collage[i]->setRandomGap( random );
 	}
 
+	// set randomness
+	int setaRandomPitch( float random, unsigned int who )
+	{
+		// assign
+		if( who < num_pieces )
+		{
+			collage[ who ]->setRandomPitch( random );
+			return 0;
+		}	
+		else 
+			return 1;
+
+	}
+
+	// set randomness
+	int setaRandomSize( float random, unsigned int who )
+	{
+		// assign
+		if( who < num_pieces )
+		{
+			collage[ who ]->setRandomSize( random );
+			return 0;
+		}	
+		else 
+			return 1;
+	}
+
+	// set randomness
+	int setaRandomPosition( float random, unsigned int who )
+	{
+		// assign
+		if( who < num_pieces )
+		{
+			collage[ who ]->setRandomPosition( random );
+			return 0;
+		}	
+		else 
+			return 1;
+	}
+
+	// set all positions given a collection of position
+	int setaRandomGap( unsigned int random , unsigned int who )
+	{
+		// assign
+		if( who < num_pieces )
+		{
+			collage[ who ]->setRandomGap( random );
+			return 0;
+		}	
+		else 
+			return 1;
+	}
+
 	// return the random size of the first collage (helpful when not using arrays)
 	float getBaseRandomSize()
 	{
