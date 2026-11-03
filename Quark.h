@@ -7,6 +7,7 @@
 #include "Phasor.h"
 #include "Smoother.h"
 #include "Windower.h"
+#include "Interpolators.h"
 #include "stk/include/Stk.h"
 #include "stk/include/FileRead.h"
 
@@ -56,11 +57,16 @@ public:
 			{
 				// how big is our loop/grain/audio segment
 				float segment_size_frames = ( current_segment_size_ms * 0.001f ) * _buffer->dataRate();
+				// added 11/1/2026 | pitch multiplier instead of interpolate playback frequency
+				float now_pitch = pitch_slew->tick();
+				// breadth of segment ( is warped by pitch )
+				float frames_span = segment_size_frames * now_pitch;
 				// where do i look
-				float frame_index = position_slew->getCurrent() + ( playback->tick() * segment_size_frames );
+				float frame_index = position_slew->getCurrent() + playback->tick() * frames_span; // this calculation makes the read head step through the buffer at now_pitch * buffer_data_rate / fs (which makes sense)
 				// wrap within the file
 				frame_index = fmod( frame_index, (float)file_size_frames );
-				if( frame_index < 0.f ) frame_index += file_size_frames;
+				if( frame_index < 0.f ) 
+					frame_index += file_size_frames;
 				// lookup and window
 				out = window->tick( _buffer->interpolate( frame_index, channel ) );
 			}
@@ -119,7 +125,7 @@ public:
 		pitch_slew->instant( pitch );
 
 		// slew
-		float phasor_freq = pitch_slew->tick() / ( current_segment_size_ms * 0.001f );
+		float phasor_freq =  1.0 / ( current_segment_size_ms * 0.001f ); // changed 11/1/2026 | the numerator used to be pitch_slew->tick()  
 		playback->setFrequency( phasor_freq, TRUE );
 		position_slew->tick(); // move
 
@@ -204,7 +210,7 @@ public:
 		return window->getSizeMs();
 	}
 
-	unsigned int bufferSize()
+	size_t bufferSize()
 	{
 		if( _buffer ) return _buffer->size() / _buffer->channels();
 		else return 0;
@@ -248,7 +254,7 @@ private:
 	float segment_size_ms = 1.f; // size of the audio we need to read
 	float current_segment_size_ms = 100.f; // this is "memory" variable used in the tick function
 	float pitch = 1.f; // base pitch
-	unsigned int file_size_frames = 0; // file size in frames ( samples / channels )
+	size_t file_size_frames = 0; // file size in frames ( samples / channels )
 	bool go = false; // are we making sound
 	bool loop = true; // are we looping sound
 	unsigned int toGo = 0; // how many samples to go for the next or current gap

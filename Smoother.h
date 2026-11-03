@@ -21,13 +21,12 @@ public:
 	}
 
 	// set the target
-	void setTarget( double target, double howLongMs = 30.f )
+	void setTargetMs( double target, double howLongMs = 30.0 )
 	{
 		// ms -> samples & round up ( number of samples we will need to get to target )
-		int rampLength = static_cast<int>( msToSamples( howLongMs ) );
+		unsigned int rampLength = static_cast<unsigned int>( msToSamples( howLongMs ) );
 		// if it's going to take less than 1 sample to interpolate, just use one sample
 		if( rampLength < 1 ) rampLength = 1;
-
 		// set new target
 		this->target = target;
 		// new increment 
@@ -37,7 +36,7 @@ public:
 	}
 
 	// set the target
-	void setTarget( double target, unsigned int samplesToGo = 1000 )
+	void setTargetSamp( double target, unsigned int samplesToGo = 1000 )
 	{
 		// ms -> samples & round up ( number of samples we will need to get to target )
 		unsigned int rampLength = samplesToGo;
@@ -60,7 +59,7 @@ public:
 			// increment
 			current += increment;
 			// we have one less sample to worry about
-			remaining--; 
+			remaining--;
 		}
 		
 		// if there are no more steps to take, jump to the target
@@ -102,10 +101,10 @@ public:
 	// what's the target?
 	double getTarget() { return target; }
 	// are we moving? 
-	int isMoving() 
+	bool isMoving() 
 	{ 
-		if( remaining > 0 ) return TRUE;
-		else return FALSE; 
+		if( remaining > 0 ) return true;
+		else return false; 
 	}
 
 	// sample rate
