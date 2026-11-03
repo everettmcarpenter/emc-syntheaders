@@ -11,7 +11,7 @@
 // one multiply lerp as described by JOS!
 // https://ccrma.stanford.edu/~jos/pasp/One_Multiply_Linear_Interpolation.html
 template <typename T> 
-T lerp( T lhs, T rhs, double distance )
+inline T lerp( T lhs, T rhs, double distance )
 {
     if( distance >= 0.0 && distance <= 1.0 )
     {
@@ -26,7 +26,7 @@ T lerp( T lhs, T rhs, double distance )
 // allpass interpolation
 // https://ccrma.stanford.edu/~jos/pasp/First_Order_Allpass_Interpolation.html
 template <typename T>
-T allpass( T lhs, T rhs, T past, double distance )
+inline T allpass( T lhs, T rhs, T past, double distance )
 {
     if( distance >= 0.0 && distance <= 1.0 )
     {

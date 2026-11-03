@@ -165,18 +165,18 @@ public:
 	void newGrain( Quark* particle )
 	{
 		// calculate our new size using a randomized factor
-		double n_size = base_size + ( 0.5 * ( random->tick() + 1.0 ) * random_size );
+		double n_size = base_size + random->tick() * random_size; // edit 11/1/2026 | removed noise scaling from [0.0,1.0] now [-1.0,1.0]
 		// clamp value 
 		n_size = std::max( 1.0, n_size );
 		// provide new value to quark
 		particle->setSize( n_size );
 
 		// pitch is easy(ish), same as above
-		double n_pitch = pitch_slew->getCurrent() + ( 0.5 * ( random->tick() + 1.0 ) * random_pitch );
+		double n_pitch = pitch_slew->getCurrent() + random->tick() * random_pitch; // edit 11/1/2026 | removed noise scaling from [0.0,1.0] now [-1.0,1.0]
 		// clamp
 		n_pitch = std::max( 0.0, n_pitch );
 		// have the particle instantly jump there, if it slews, then quarks will just endlessy drift through pitch space
-		particle->setPitchInstant( n_pitch );
+		particle->setPitch( n_pitch );
 
 		// this one is the worst
 		double random_offset_frames = ( random_position * 0.001f ) * _fs; // convert random_position to samples
@@ -251,7 +251,7 @@ public:
 			float n_size = base_size + ( random->tick() * random_size );
 			n_size = std::max( 1.f, n_size );
 			// std::cout << "quark " << i << " size " << n_size << std::endl;
-			quantum[i]->setSize( n_size );
+			// quantum[i]->setSize( n_size );
 		}
 	}
 	
@@ -259,19 +259,19 @@ public:
 
 	void setPitch( double n_pitch )
 	{
-		pitch_slew->setTarget( n_pitch, 100.f );
+		pitch_slew->setTargetMs( n_pitch, 40.f );
 		// for( unsigned int i = 0; i < num_grains; i++ ) quantum[i]->setPitch( base_pitch + ( random->tick() * random_pitch ) );
 	}
 
 	void setPitch( double n_pitch, double ms_to )
 	{
-		pitch_slew->setTarget( n_pitch, ms_to );
+		pitch_slew->setTargetMs( n_pitch, ms_to );
 		// for( unsigned int i = 0; i < num_grains; i++ ) quantum[i]->setPitch( base_pitch + ( random->tick() * random_pitch ) );
 	}
 
 	void setPitch( double n_pitch, unsigned int samp_to )
 	{
-		pitch_slew->setTarget( n_pitch, samp_to );
+		pitch_slew->setTargetSamp( n_pitch, samp_to );
 		// for( unsigned int i = 0; i < num_grains; i++ ) quantum[i]->setPitch( base_pitch + ( random->tick() * random_pitch ) );
 	}
 
@@ -287,22 +287,22 @@ public:
 
 	void setPosition( double n_position ) 
 	{
-		position_slew->setTarget( n_position, 240.f );
+		position_slew->setTargetMs( n_position, 240.f );
 	}
 
 	void setPosition( double n_position, double ms_to ) 
 	{
-		position_slew->setTarget( n_position, ms_to );
+		position_slew->setTargetMs( n_position, ms_to );
 	}
 
 	void setPosition( double n_position, unsigned int samp_to ) 
 	{
-		position_slew->setTarget( n_position, samp_to );
+		position_slew->setTargetSamp( n_position, samp_to );
 	}
 
 	void setPosition( unsigned int n_position )
 	{
-		position_slew->setTarget( (float)n_position / (float)this->size(), 40.f); // convert
+		position_slew->setTargetMs( (float)n_position / (float)this->size(), 40.f); // convert
 	}
 
 	float getPosition() { return position_slew->getCurrent(); }
@@ -448,7 +448,7 @@ public:
 	//=======================================================================
 
 	// how big is the buffer
-	unsigned int size() { return buffer->size() / buffer->channels(); }
+	size_t size() { return buffer->size() / buffer->channels(); }
 
 	//=======================================================================
 	//
@@ -496,7 +496,7 @@ protected:
 	stk::FileRead* file_read = nullptr; // this opens up a file
 	stk::StkFrames* buffer = nullptr; // everyone reads from here
 	Smoother* position_slew = nullptr; // this enables us to slew our position from a high level [0.0,1.0]
-	Smoother* pitch_slew = nullptr; // slew pitch from high level
+	Smoother* pitch_slew = nullptr; // slew pitch from a high level
 	unsigned int num_grains = 0; // number of grains
 	unsigned int _fs = 0; // sample rate
 	float scale = 0.f; // scale down the grains
