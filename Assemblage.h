@@ -33,6 +33,7 @@ public:
 	{
 		// default number of pieces
 		num_pieces = n_pieces * n_channels;
+		per_channel = n_pieces;
 		channels = n_channels;
 		_fs = fs;
 		// initialize
@@ -40,7 +41,7 @@ public:
 		// default to 4 grains per sound object, can do more
 		for( unsigned int i = 0; i < num_pieces; i ++ ) 
 		{
-			collage[i] = new SoundMatter( fs, 4 ); 
+			collage[i] = new SoundMatter( _fs, 4 ); 
 		}
 		// precalc
 		scalar = 1.f / num_pieces;
@@ -83,17 +84,18 @@ public:
 		return out;
 	}
 
-	// only use this is channels > 1
+	// only use this when channels > 1
 	void tick( SAMPLE* in, SAMPLE* out, unsigned int frames )
 	{
-		memset( out, 0, sizeof(SAMPLE) * channels * frames); // clear
+		memset( out, 0, sizeof(SAMPLE) * channels * frames ); // clear
+		float scale = 1.0 / per_channel;
 
 		for( unsigned int f = 0; f < frames; f++ )
 		{
 			for( unsigned int c = 0; c < num_pieces; c++ )
 			{
 				unsigned int chan = c % channels;
-				out[f * channels + chan] = collage[c]->tick();
+				out[f * channels + chan] += collage[c]->tick() * scale; // each output channel is written with the tick collage[c + channels * i]
 			}
 		}
 	}
@@ -173,7 +175,8 @@ public:
 	void setPitch( float pitch )
 	{
 		// assign
-		for( unsigned int i = 0; i < num_pieces; i++ ) collage[i]->setPitch( pitch );
+		for( unsigned int i = 0; i < num_pieces; i++ ) 
+			collage[i]->setPitch( pitch );
 		// how do we save this? maybe we just retrieve the targets of the sound matter(s) and fit them into a chuck array?
 	}
 
@@ -181,7 +184,8 @@ public:
 	void setPitch( float pitch, float ms_to )
 	{
 		// assign
-		for( unsigned int i = 0; i < num_pieces; i++ ) collage[i]->setPitch( pitch, ms_to );
+		for( unsigned int i = 0; i < num_pieces; i++ ) 
+			collage[i]->setPitch( pitch, ms_to );
 		// how do we save this? maybe we just retrieve the targets of the sound matter(s) and fit them into a chuck array?
 	}
 	
@@ -189,7 +193,8 @@ public:
 	void setSize( float size )
 	{
 		// assign
-		for( unsigned int i = 0; i < num_pieces; i++ ) collage[i]->setSize( size );
+		for( unsigned int i = 0; i < num_pieces; i++ ) 
+			collage[i]->setSize( size );
 		// how do we save this?
 	}
 	
@@ -197,7 +202,8 @@ public:
 	void setPosition( float position )
 	{
 		// assign
-		for( unsigned int i = 0; i < num_pieces; i++ ) collage[i]->setPosition( position );
+		for( unsigned int i = 0; i < num_pieces; i++ ) 
+			collage[i]->setPosition( position );
 		// how do we save this?
 	}
 	
@@ -205,7 +211,8 @@ public:
 	void setPosition( float position, float ms_to )
 	{
 		// assign
-		for( unsigned int i = 0; i < num_pieces; i++ ) collage[i]->setPosition( position, ms_to );
+		for( unsigned int i = 0; i < num_pieces; i++ ) 
+			collage[i]->setPosition( position, ms_to );
 		// how do we save this?
 	}
 	
@@ -227,20 +234,27 @@ public:
 		// new parameter value (yay)
 		if( which < num_pieces ) 
 		{
-			collage[ which ]->setPitch( pitch );
+			int n_pieces = num_pieces / channels; // the multiplier
+			// they're interleaved!
+			for( unsigned int p = 0; p < n_pieces; p++ )
+				collage[ which + channels * p ]->setPitch( pitch );
+
 			return 0;
 		}
 		else 
-			return 1;
+		return 1;
 	}
-
+	
 	// set all pitches to a single value
 	int setaPitch( float pitch, float ms_to, unsigned int which )
 	{
 		// new parameter value (yay)
 		if( which < num_pieces ) 
 		{
-			collage[ which ]->setPitch( pitch, ms_to );
+			int n_pieces = num_pieces / channels; // the multiplier
+			// they're interleaved!
+			for( unsigned int p = 0; p < n_pieces; p++ )
+				collage[ which + channels * p ]->setPitch( pitch, ms_to );
 			return 0;
 		}
 		else 
@@ -253,7 +267,10 @@ public:
 		// new parameter value (yay)
 		if( which < num_pieces ) 
 		{
-			collage[ which ]->setSize( size );
+			int n_pieces = num_pieces / channels; // the multiplier
+			// they're interleaved!
+			for( unsigned int p = 0; p < n_pieces; p++ )
+				collage[ which + channels * p ]->setSize( size );
 			return 0;
 		}
 		else 
@@ -266,7 +283,10 @@ public:
 		// new parameter value (yay)
 		if( which < num_pieces ) 
 		{
-			collage[ which ]->setPosition( position );
+			int n_pieces = num_pieces / channels; // the multiplier
+			// they're interleaved!
+			for( unsigned int p = 0; p < n_pieces; p++ )
+				collage[ which + channels * p ]->setPosition( position );
 			return 0;
 		}
 		else 
@@ -279,7 +299,10 @@ public:
 		// new parameter value (yay)
 		if( which < num_pieces ) 
 		{
-			collage[ which ]->setPosition( position, ms_to );
+			int n_pieces = num_pieces / channels; // the multiplier
+			// they're interleaved!
+			for( unsigned int p = 0; p < n_pieces; p++ )
+				collage[ which + channels * p ]->setPosition( position, ms_to );
 			return 0;
 		}
 		else 
@@ -291,10 +314,15 @@ public:
 		// new parameter value (yay)
 		if( which < num_pieces ) 
 		{
-			if( gap_samp >= 20 * _fs )
-				collage[ which ]->setGap( 20 * _fs );
-			else
-				collage[ which ]->setGap( gap_samp );
+			int n_pieces = num_pieces / channels; // the multiplier
+			// they're interleaved!
+			for( unsigned int p = 0; p < n_pieces; p++ )
+			{
+				if( gap_samp >= 20 * _fs )
+					collage[ which + channels * p ]->setGap( 20 * _fs );
+				else
+					collage[ which + channels * p ]->setGap( gap_samp );
+			}
 			return 0;
 		}
 		else 
@@ -647,7 +675,7 @@ public:
 	//=======================================================================
 
 	// buffer size
-	unsigned int samples()
+	size_t samples()
 	{
 		return buffer->size() / buffer->channels();
 	}
@@ -683,7 +711,8 @@ private:
 	stk::FileRead* file_read = nullptr; // this opens up a file
 	stk::StkFrames* buffer = nullptr; // everyone reads from here
 	SoundMatter** collage = nullptr; // our pieces of sound
-	unsigned int num_pieces = 0; // how many pieces of sound?
+	unsigned int num_pieces = 0; // how many pieces of sound ( total )?
+	unsigned int per_channel = 0; // how many pieces of sound ( per channel )?
 	unsigned int channels = 0;
 	unsigned int _fs = 0;
 	float scalar = 0.f; // turn down the volume
