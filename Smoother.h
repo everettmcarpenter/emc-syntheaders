@@ -51,6 +51,14 @@ public:
 		remaining = rampLength;
 	}
 
+	// set instant | USE WISELY
+	void setInstant( double target )
+	{
+		this->target = target; 
+		this->current = target; // we are the target
+		remaining = 0; // we won't be taking any steps
+	}
+
 	// move in time
 	double tick()
 	{
