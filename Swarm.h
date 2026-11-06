@@ -104,7 +104,7 @@ public:
 	{
 		// output
 		double out = 0.0;
-		bool allQuiet = true;
+		allQuiet = true;
 		// if we're good to go
 		if( go )
 		{
@@ -139,13 +139,17 @@ public:
 					quantum[i]->trigger();
 				}
 			} 
+			// catch
+			if( loop && position_slew->getCurrent() == 1.0  ) // looping and at the end?
+			{
+				position_slew->setInstant( 0.0 );
+				position_slew->setTargetMs( 1.0, loop_rate * ( this->size() / this->_fs ) * 1000.0 );
+			}
 			// advance
 			pitch_slew->tick();
 			position_slew->tick();
 			// scale because if we don't prevent blowing our ears out, ChucK definitely won't!
 			out *= scale;
-			// soft clip
-			out = tanh( out );
 		}
 		// return
 		return out;
@@ -250,8 +254,6 @@ public:
 			// we gotta wrap around 
 			float n_size = base_size + ( random->tick() * random_size );
 			n_size = std::max( 1.f, n_size );
-			// std::cout << "quark " << i << " size " << n_size << std::endl;
-			// quantum[i]->setSize( n_size );
 		}
 	}
 	
@@ -509,6 +511,9 @@ protected:
 	bool go = false;
 	bool internalBuffer = true;
 	bool waitingToSync = false;
+	bool allQuiet = true;
+	bool loop = false;
+	float loop_rate = 1.0f; // 1.0 = normal playback rate, 2.0 = double, 0.5 = half, etc.
 };
 
 #endif
