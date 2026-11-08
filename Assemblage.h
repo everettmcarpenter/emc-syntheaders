@@ -608,15 +608,11 @@ public:
 		{
 			float position = random;
 
-			std::cerr << position << " ";
-
 			// bounds
 			if ( position < 0.0 )
 				position = 0.0;
 			else if ( position > this->ms() )
 				position = this->ms();
-
-			std::cerr << position << " ms " << this->ms() << '\n';
 
 			collage[i]->setRandomPosition( position );
 		}
