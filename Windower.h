@@ -50,8 +50,10 @@ public:
 		// get index ( phasor [0.0,1.0] * ( size_ms converted to samples ) )
 		double index = phasor->tick() * ( table_size - 1 );
 		// range check & clamp lookup
-		if( index >= table_size - 1 ) return _window[table_size - 1] * input;
-		else if( index == 0 ) return _window[0] * input;
+		if( index >= table_size - 1 ) 
+			return _window[table_size - 1] * input;
+		else if( index == 0 ) 
+			return _window[0] * input;
 		unsigned int intdex = static_cast<unsigned int>( index ); // round downwards;
 		double fractional = index - intdex; // get the decimal
 		double out = _window[intdex]; // nearest point
