@@ -1,9 +1,11 @@
 #ifndef ASSEMBLAGE_H
 	#define ASSEMBLAGE_H
 
+#include <cmath>
+#include <stdio.h>
 #include "Swarm.h"
-#include "SoundFile.h"
 #include "chugin.h"
+#include "SoundFile.h"
 
 //=======================================================================
 //
@@ -176,7 +178,15 @@ public:
 	{
 		// assign
 		for( unsigned int i = 0; i < num_pieces; i++ ) 
-			collage[i]->setPitch( pitch );
+		{
+			float mpitch = pitch;
+			
+			// bounds
+			if( mpitch < 0.0 )
+				mpitch = 0.0;
+			
+			collage[i]->setPitch( mpitch );
+		}
 		// how do we save this? maybe we just retrieve the targets of the sound matter(s) and fit them into a chuck array?
 	}
 
@@ -185,7 +195,15 @@ public:
 	{
 		// assign
 		for( unsigned int i = 0; i < num_pieces; i++ ) 
-			collage[i]->setPitch( pitch, ms_to );
+		{
+			float mpitch = pitch;
+			
+			// bounds
+			if( mpitch < 0.0 )
+				mpitch = 0.0;
+
+			collage[i]->setPitch( mpitch, ms_to );
+		}
 		// how do we save this? maybe we just retrieve the targets of the sound matter(s) and fit them into a chuck array?
 	}
 	
@@ -194,7 +212,16 @@ public:
 	{
 		// assign
 		for( unsigned int i = 0; i < num_pieces; i++ ) 
-			collage[i]->setSize( size );
+		{
+			float msize = size;
+
+			if( msize < 0.0 )
+				msize = 1.0;
+			else if( msize > this->ms() )
+				msize = this->ms();
+
+			collage[i]->setSize( msize );
+		}
 		// how do we save this?
 	}
 	
@@ -203,7 +230,16 @@ public:
 	{
 		// assign
 		for( unsigned int i = 0; i < num_pieces; i++ ) 
-			collage[i]->setPosition( position );
+		{
+			float mposition = position;
+			
+			if( mposition < 0.0 )
+				mposition = 0.0;
+			else if( mposition > 1.0 )
+				mposition = 1.0;
+
+			collage[i]->setPosition( mposition );
+		}
 		// how do we save this?
 	}
 	
@@ -212,7 +248,16 @@ public:
 	{
 		// assign
 		for( unsigned int i = 0; i < num_pieces; i++ ) 
-			collage[i]->setPosition( position, ms_to );
+		{
+			float mposition = position;
+			
+			if( mposition < 0.0 )
+				mposition = 0.0;
+			else if( mposition > 1.0 )
+				mposition = 1.0;
+			
+			collage[i]->setPosition( mposition, ms_to );
+		}
 		// how do we save this?
 	}
 	
@@ -237,7 +282,15 @@ public:
 			int n_pieces = num_pieces / channels; // the multiplier
 			// they're interleaved!
 			for( unsigned int p = 0; p < n_pieces; p++ )
-				collage[ which + channels * p ]->setPitch( pitch );
+			{
+				float mpitch = pitch;
+			
+				// bounds
+				if( mpitch < 0.0 )
+					mpitch = 0.0;
+
+				collage[ which + channels * p ]->setPitch( mpitch );
+			}
 
 			return 0;
 		}
@@ -254,7 +307,15 @@ public:
 			int n_pieces = num_pieces / channels; // the multiplier
 			// they're interleaved!
 			for( unsigned int p = 0; p < n_pieces; p++ )
-				collage[ which + channels * p ]->setPitch( pitch, ms_to );
+			{
+				float mpitch = pitch;
+			
+				// bounds
+				if( mpitch < 0.0 )
+					mpitch = 0.0;
+
+				collage[ which + channels * p ]->setPitch( mpitch, ms_to );
+			}
 			return 0;
 		}
 		else 
@@ -270,7 +331,16 @@ public:
 			int n_pieces = num_pieces / channels; // the multiplier
 			// they're interleaved!
 			for( unsigned int p = 0; p < n_pieces; p++ )
-				collage[ which + channels * p ]->setSize( size );
+			{
+				float msize = size;
+
+				if( msize < 0.0 )
+					msize = 1.0;
+				else if( msize > this->ms() )
+					msize = this->ms();
+
+				collage[ which + channels * p ]->setSize( msize );
+			}
 			return 0;
 		}
 		else 
@@ -286,7 +356,16 @@ public:
 			int n_pieces = num_pieces / channels; // the multiplier
 			// they're interleaved!
 			for( unsigned int p = 0; p < n_pieces; p++ )
-				collage[ which + channels * p ]->setPosition( position );
+			{
+				float mposition = position;
+			
+				if( mposition < 0.0 )
+					mposition = 0.0;
+				else if( mposition > 1.0 )
+					mposition = 1.0;
+
+				collage[ which + channels * p ]->setPosition( mposition );
+			}
 			return 0;
 		}
 		else 
@@ -302,7 +381,16 @@ public:
 			int n_pieces = num_pieces / channels; // the multiplier
 			// they're interleaved!
 			for( unsigned int p = 0; p < n_pieces; p++ )
-				collage[ which + channels * p ]->setPosition( position, ms_to );
+			{
+				float mposition = position;
+			
+				if( mposition < 0.0 )
+					mposition = 0.0;
+				else if( mposition > 1.0 )
+					mposition = 1.0;
+				
+				collage[ which + channels * p ]->setPosition( mposition, ms_to );
+			}
 			return 0;
 		}
 		else 
@@ -411,16 +499,38 @@ public:
 	{
 		unsigned int size = API->object->array_float_size( pitches );
 		// assign
-		for( unsigned int i = 0; i < size; i++ ) collage[i]->setRandomPitch( API->object->array_float_get_idx( pitches, i % size ) );
+		for( unsigned int i = 0; i < size; i++ ) 
+		{
+			float pitch = API->object->array_float_get_idx( pitches, i % size );
+
+			// bounds
+			if( pitch < 0.0 )
+				pitch = 0.0;
+
+			// set
+			collage[i]->setRandomPitch( pitch );
+		}
 		// how do we save this? maybe we just retrieve the targets of the sound matter(s) and fit them into a chuck array?
 	}
 
 	// set all sizes given a collection of sizes
 	void setRandomSize( Chuck_ArrayFloat* sizes, const CK_DL_API& API )
 	{
-		unsigned int size = API->object->array_float_size( sizes);
+		unsigned int size = API->object->array_float_size( sizes );
 		// assign
-		for( unsigned int i = 0; i < size; i++ ) collage[i]->setRandomSize( API->object->array_float_get_idx( sizes, i % size ) );
+		for( unsigned int i = 0; i < size; i++ ) 
+		{
+			float grainSize = API->object->array_float_get_idx( sizes, i % size );
+			
+			// bounds
+			if( grainSize < 0.0 )
+				grainSize = 0.0;
+			else if( grainSize >= this->ms() )
+				grainSize = this->ms();
+
+			// set
+			collage[i]->setRandomSize( grainSize );
+		}
 		// how do we save this?
 	}
 
@@ -429,7 +539,18 @@ public:
 	{
 		unsigned int size = API->object->array_float_size( positions );
 		// assign
-		for( unsigned int i = 0; i < size; i++ ) collage[i]->setRandomPosition( (float)API->object->array_float_get_idx( positions, i % size ) );
+		for( unsigned int i = 0; i < size; i++ ) 
+		{
+			float position = (float)API->object->array_float_get_idx( positions, i % size );
+
+			// bounds
+			if ( position < 0.0 )
+				position = 0.0;
+			else if ( position >= this->ms() )
+				position = this->ms();
+
+			collage[i]->setRandomPosition( position );
+		}
 		// how do we save this?
 	}
 
@@ -438,7 +559,8 @@ public:
 	{
 		unsigned int size = API->object->array_float_size( gaps );
 		// assign
-		for( unsigned int i = 0; i < size; i++ ) collage[i]->setRandomPosition( (unsigned int)API->object->array_float_get_idx( gaps, i % size ) );
+		for( unsigned int i = 0; i < size; i++ ) 
+			collage[i]->setRandomGap( (unsigned int)API->object->array_float_get_idx( gaps, i % size ) );
 		// how do we save this?
 	}
 
@@ -446,21 +568,58 @@ public:
 	void setRandomPitch( float random )
 	{
 		// assign
-		for( unsigned int i = 0; i < num_pieces; i++ ) collage[i]->setRandomPitch( random );
+		for( unsigned int i = 0; i < num_pieces; i++ ) 
+		{
+			float pitch = random;
+
+			// bounds
+			if( pitch < 0.0 )
+				pitch = 0.0;
+
+			// set
+			collage[i]->setRandomPitch( pitch );
+		}
 	}
 
 	// set randomness
 	void setRandomSize( float random )
 	{
 		// assign
-		for( unsigned int i = 0; i < num_pieces; i++ ) collage[i]->setRandomSize( random );
+		for( unsigned int i = 0; i < num_pieces; i++ ) 
+		{
+			float grainSize = random;
+			
+			// bounds
+			if( grainSize < 0.0 )
+				grainSize = 0.0;
+			else if( grainSize >= this->ms() )
+				grainSize = this->ms();
+
+			// set
+			collage[i]->setRandomSize( grainSize );
+		}
 	}
 
 	// set randomness
 	void setRandomPosition( float random )
 	{
 		// assign
-		for( unsigned int i = 0; i < num_pieces; i++ ) collage[i]->setRandomPosition( random );
+		for( unsigned int i = 0; i < num_pieces; i++ ) 
+		{
+			float position = random;
+
+			std::cerr << position << " ";
+
+			// bounds
+			if ( position < 0.0 )
+				position = 0.0;
+			else if ( position > this->ms() )
+				position = this->ms();
+
+			std::cerr << position << " ms " << this->ms() << '\n';
+
+			collage[i]->setRandomPosition( position );
+		}
 	}
 
 	// set all positions given a collection of position
@@ -476,7 +635,14 @@ public:
 		// assign
 		if( who < num_pieces )
 		{
-			collage[ who ]->setRandomPitch( random );
+			float pitch = random;
+
+			// bounds
+			if( pitch < 0.0 )
+				pitch = 0.0;
+
+			// set
+			collage[who]->setRandomPitch( pitch );
 			return 0;
 		}	
 		else 
@@ -490,7 +656,17 @@ public:
 		// assign
 		if( who < num_pieces )
 		{
-			collage[ who ]->setRandomSize( random );
+			float grainSize = random;
+			
+			// bounds
+			if( grainSize < 0.0 )
+				grainSize = 0.0;
+			else if( grainSize >= this->ms() )
+				grainSize = this->ms();
+
+			// set
+			collage[who]->setRandomSize( grainSize );
+
 			return 0;
 		}	
 		else 
@@ -503,7 +679,15 @@ public:
 		// assign
 		if( who < num_pieces )
 		{
-			collage[ who ]->setRandomPosition( random );
+			float position = random;
+
+			// bounds
+			if ( position < 0.0 )
+				position = 0.0;
+			else if ( position >= this->ms() )
+				position = this->ms();
+
+			collage[who]->setRandomPosition( position );
 			return 0;
 		}	
 		else 
@@ -586,7 +770,8 @@ public:
 		this->stop(); 
 
 		// if one is open, close the file and delete the buffer
-		if( file_read->isOpen() ) file_read->close();
+		if( file_read->isOpen() ) 
+			file_read->close();
 		
 		// clear 
 		delete buffer;
@@ -616,7 +801,8 @@ public:
 		this->stop();
 		
 		// if one is open, close the file and delete the buffer
-		if( file_read->isOpen() ) file_read->close();
+		if( file_read->isOpen() ) 
+			file_read->close();
 		
 		// clear 
 		delete buffer;
@@ -678,6 +864,21 @@ public:
 	size_t samples()
 	{
 		return buffer->size() / buffer->channels();
+	}
+
+	//=======================================================================
+	//
+	//	name(s): ms
+	//	desc: returns the size of the current buffer in milliseconds, if the 
+	//		  buffer is multichannel, it will return the length of one channel 
+	//	args: none
+	// 
+	//=======================================================================
+
+	// buffer size
+	double ms()
+	{
+		return 1000.0 * ( ( buffer->size() / buffer->channels() ) / buffer->dataRate() );
 	}
 
 	//=======================================================================
