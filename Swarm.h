@@ -187,7 +187,7 @@ public:
 		// divide by the buffer size 
 		random_offset_frames /= (double)this->size();
 		// create randomized position
-		double n_position = position_slew->getCurrent() + ( 0.5 * ( random->tick() + 1.0 ) * random_offset_frames );
+		double n_position = position_slew->getCurrent() + ( random->tick() * random_offset_frames );
 		// clamp, of course
 		n_position = std::max( 0.0, std::min( n_position, 1.0 ) );
 		// also instantly jump so that we aren't drifting forever
